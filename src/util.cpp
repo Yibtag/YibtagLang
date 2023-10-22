@@ -11,3 +11,16 @@ std::string Util::read_file(std::string path) {
     
     return buffer.str();
 }
+
+bool Util::write_file(std::string path, std::string content) {
+    std::ofstream file(path);
+
+    if (!file.is_open()) {
+        return false;
+    }
+
+    file << content;
+    file.close();
+
+    return true;
+}

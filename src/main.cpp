@@ -2,7 +2,10 @@
 #include <string.h>
 #include <string>
 
+#include "generator.hpp"
 #include "tokenizer.hpp"
+#include "parser.hpp"
+
 #include "logger.hpp"
 #include "util.hpp"
 
@@ -31,6 +34,25 @@ int main(int argc, char* argv[]) {
 
     Tokenizer tokenizer(std::move(contents));
     std::vector<Token> tokens = tokenizer.tokenize();
+
+    Parser parser(std::move(tokens));
+    std::optional<NodeExit> program = parser.parse();
+
+    if (!program.has_value()) {
+        logger->error("Failed to parse the program!");
+    }
+
+    Generator generator(std::move(program.value()));
+    std::string generated =  generator.generate();
+
+    if (!Util::write_file("out.asm", generated)) {
+        logger->error("Unable to create output file!");
+    }
+
+    system("nasm -felf64 out.asm");
+    system("ld -o out out.o");
+
+    logger->info("Compiled succesfuly!");
 
     return EXIT_SUCCESS;
 }
